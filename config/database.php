@@ -29,18 +29,21 @@ function getDBConnection(): PDO
     ];
 
     if (!in_array(DB_HOST, ['localhost', '127.0.0.1'], true)) {
-        if (!defined('PDO::MYSQL_ATTR_SSL_CA') || !defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
-            throw new RuntimeException('The PDO MySQL driver does not support verified TLS connections.');
-        }
-
         $caPath = getenv('DB_SSL_CA');
         $caPath = $caPath !== false && $caPath !== '' ? $caPath : '/etc/ssl/certs/ca-certificates.crt';
         if (!is_file($caPath)) {
             throw new RuntimeException('A trusted CA bundle is required for the remote database connection. Set DB_SSL_CA to its file path.');
         }
 
-        $options[PDO::MYSQL_ATTR_SSL_CA] = $caPath;
-        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+        if (PHP_VERSION_ID >= 80500 && class_exists(\Pdo\Mysql::class)) {
+            $options[\Pdo\Mysql::ATTR_SSL_CA] = $caPath;
+            $options[\Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT] = true;
+        } elseif (defined('PDO::MYSQL_ATTR_SSL_CA') && defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
+            $options[PDO::MYSQL_ATTR_SSL_CA] = $caPath;
+            $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+        } else {
+            throw new RuntimeException('The PDO MySQL driver does not support verified TLS connections.');
+        }
     }
 
     return new PDO($dsn, DB_USER, DB_PASS, $options);
