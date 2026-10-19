@@ -1,4 +1,5 @@
 <?php
+ob_start();
 error_reporting(E_ALL); ini_set('display_errors', 1);
 $page = $_GET['page'] ?? 'dashboard';
 $allowedPages = ['dashboard', 'patients', 'patient_profile', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt'];
