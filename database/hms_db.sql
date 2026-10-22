@@ -30,6 +30,13 @@ CREATE TABLE `bills` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
+CREATE TABLE `courses` (
+  `course_id` int(11) NOT NULL,
+  `course_code` varchar(20) NOT NULL,
+  `course_name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
 
 --
 -- Table structure for table `bill_items`
@@ -114,6 +121,7 @@ CREATE TABLE `patients` (
   `contact_number` varchar(20) NOT NULL,
   `address` varchar(255) NOT NULL,
   `emergency_contact` varchar(100) NOT NULL,
+  `course_id` int(11) DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'Active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -241,6 +249,12 @@ ALTER TABLE `departments`
   ADD PRIMARY KEY (`department_id`);
 
 --
+-- Indexes for table `courses`
+--
+ALTER TABLE `courses`
+  ADD PRIMARY KEY (`course_id`);
+
+--
 -- Indexes for table `discharges`
 --
 ALTER TABLE `discharges`
@@ -264,7 +278,8 @@ ALTER TABLE `medicines`
 -- Indexes for table `patients`
 --
 ALTER TABLE `patients`
-  ADD PRIMARY KEY (`patient_id`);
+  ADD PRIMARY KEY (`patient_id`),
+  ADD KEY `course_id` (`course_id`);
 
 --
 -- Indexes for table `payments`
@@ -334,6 +349,12 @@ ALTER TABLE `bill_items`
 --
 ALTER TABLE `departments`
   MODIFY `department_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `courses`
+--
+ALTER TABLE `courses`
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `discharges`
@@ -418,6 +439,9 @@ ALTER TABLE `discharges`
 
 ALTER TABLE `doctors`
   ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`);
+
+ALTER TABLE `patients`
+  ADD CONSTRAINT `patients_ibfk_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`);
 
 
 ALTER TABLE `payments`
