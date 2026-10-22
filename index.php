@@ -1,8 +1,8 @@
 <?php
-ob_start();
+ob_start(); // lets controllers redirect with header() after the page header has printed
 error_reporting(E_ALL); ini_set('display_errors', 1);
 $page = $_GET['page'] ?? 'dashboard';
-$allowedPages = ['dashboard', 'patients', 'patient_profile', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt'];
+$allowedPages = ['dashboard', 'patients', 'patient_profile', 'courses', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt', 'discharge'];
 if (!in_array($page, $allowedPages)) { $page = 'dashboard'; }
 
 require_once __DIR__ . '/views/header.php';
@@ -11,6 +11,8 @@ if ($page === 'patients') {
     require_once __DIR__ . '/controllers/patients_controller.php';
 } elseif ($page === 'patient_profile') {
     require_once __DIR__ . '/controllers/patient_profile_controller.php';
+} elseif ($page === 'courses') {
+    require_once __DIR__ . '/controllers/courses_controller.php';
 } elseif ($page === 'doctors') {
     require_once __DIR__ . '/controllers/doctors_controller.php';
 } elseif ($page === 'rooms') {
@@ -35,6 +37,8 @@ if ($page === 'patients') {
     require_once __DIR__ . '/controllers/statement_controller.php';
 } elseif ($page === 'receipt') {
     require_once __DIR__ . '/controllers/receipt_controller.php';
+} elseif ($page === 'discharge') {
+    require_once __DIR__ . '/controllers/discharge_controller.php';
 } else {
     echo '<h1>Hospital Management System</h1>';
 }

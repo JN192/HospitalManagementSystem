@@ -6,15 +6,17 @@ class Patient
     public static function getAll(string $search = ''): array
     {
         $pdo = getDBConnection();
+        $sql = "SELECT p.*, c.course_code, c.course_name
+                FROM patients p
+                LEFT JOIN courses c ON p.course_id = c.course_id";
         if ($search !== '') {
-            $stmt = $pdo->prepare(
-                "SELECT * FROM patients 
-                 WHERE first_name LIKE :s OR last_name LIKE :s OR patient_code LIKE :s
-                 ORDER BY patient_id DESC"
-            );
-            $stmt->execute(['s' => "%$search%"]);
+            $sql .= " WHERE p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_code LIKE :s3 OR c.course_code LIKE :s4
+                      ORDER BY p.patient_id DESC";
+            $stmt = $pdo->prepare($sql);
+            $like = "%$search%";
+            $stmt->execute(['s1' => $like, 's2' => $like, 's3' => $like, 's4' => $like]);
         } else {
-            $stmt = $pdo->query("SELECT * FROM patients ORDER BY patient_id DESC");
+            $stmt = $pdo->query($sql . " ORDER BY p.patient_id DESC");
         }
         return $stmt->fetchAll();
     }
@@ -22,7 +24,12 @@ class Patient
     public static function getById(int $id): ?array
     {
         $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT * FROM patients WHERE patient_id = :id");
+        $stmt = $pdo->prepare(
+            "SELECT p.*, c.course_code, c.course_name
+             FROM patients p
+             LEFT JOIN courses c ON p.course_id = c.course_id
+             WHERE p.patient_id = :id"
+        );
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -33,8 +40,8 @@ class Patient
         $pdo = getDBConnection();
         $stmt = $pdo->prepare(
             "INSERT INTO patients 
-             (patient_code, first_name, last_name, birth_date, sex, contact_number, address, emergency_contact, status)
-             VALUES (:patient_code, :first_name, :last_name, :birth_date, :sex, :contact_number, :address, :emergency_contact, 'Active')"
+             (patient_code, first_name, last_name, birth_date, sex, contact_number, address, emergency_contact, course_id, status)
+             VALUES (:patient_code, :first_name, :last_name, :birth_date, :sex, :contact_number, :address, :emergency_contact, :course_id, 'Active')"
         );
         $stmt->execute($data);
     }
@@ -47,7 +54,7 @@ class Patient
             "UPDATE patients SET 
                 patient_code = :patient_code, first_name = :first_name, last_name = :last_name,
                 birth_date = :birth_date, sex = :sex, contact_number = :contact_number,
-                address = :address, emergency_contact = :emergency_contact
+                address = :address, emergency_contact = :emergency_contact, course_id = :course_id
              WHERE patient_id = :id"
         );
         $stmt->execute($data);

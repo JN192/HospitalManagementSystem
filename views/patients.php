@@ -21,11 +21,24 @@
             <option value="Female" <?= (($editPatient['sex'] ?? '') === 'Female') ? 'selected' : '' ?>>Female</option>
         </select>
     </label><br>
+    <label>Course<br>
+        <select name="course_id" required>
+            <option value="">-- Select a course --</option>
+            <?php foreach ($courses as $c): ?>
+                <option value="<?= $c['course_id'] ?>" <?= ((int)($editPatient['course_id'] ?? 0) === (int)$c['course_id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($c['course_code'] . ' - ' . $c['course_name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <?php if (empty($courses)): ?>
+            <span style="color:red;"> No courses yet. <a href="index.php?page=courses">Add one here.</a></span>
+        <?php endif; ?>
+    </label><br>
     <label>Contact Number<br><input type="text" name="contact_number" value="<?= htmlspecialchars($editPatient['contact_number'] ?? '') ?>"></label><br>
     <label>Address<br><input type="text" name="address" value="<?= htmlspecialchars($editPatient['address'] ?? '') ?>"></label><br>
     <label>Emergency Contact<br><input type="text" name="emergency_contact" value="<?= htmlspecialchars($editPatient['emergency_contact'] ?? '') ?>"></label><br><br>
 
-    <button type="submit"><?= $editPatient ? 'UPDATE' : 'SAVE' ?></button>
+    <button type="submit"><?= !empty($editPatient['patient_id']) ? 'UPDATE' : 'SAVE' ?></button>
     <a href="index.php?page=patients"><button type="button">CLEAR</button></a>
 </form>
 
@@ -33,28 +46,29 @@
 
 <form method="get" action="index.php">
     <input type="hidden" name="page" value="patients">
-    <input type="text" name="search" placeholder="Search by name or code..." value="<?= htmlspecialchars($search) ?>">
+    <input type="text" name="search" placeholder="Search by name, code or course..." value="<?= htmlspecialchars($search) ?>">
     <button type="submit">Search</button>
 </form>
 
 <table border="1" cellpadding="6" cellspacing="0" style="margin-top:10px; width:100%;">
     <thead>
-        <tr><th>Code</th><th>Name</th><th>Birth Date</th><th>Sex</th><th>Contact</th><th>Status</th><th>Actions</th></tr>
+        <tr><th>Code</th><th>Name</th><th>Birth Date</th><th>Sex</th><th>Course</th><th>Contact</th><th>Status</th><th>Actions</th></tr>
     </thead>
     <tbody>
         <?php if (empty($patients)): ?>
-            <tr><td colspan="7">No patients found.</td></tr>
+            <tr><td colspan="8">No patients found.</td></tr>
         <?php else: foreach ($patients as $p): ?>
             <tr>
                 <td><?= htmlspecialchars($p['patient_code']) ?></td>
                 <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
                 <td><?= htmlspecialchars($p['birth_date']) ?></td>
                 <td><?= htmlspecialchars($p['sex']) ?></td>
+                <td><?= htmlspecialchars($p['course_code'] ?? '-') ?></td>
                 <td><?= htmlspecialchars($p['contact_number']) ?></td>
                 <td><?= htmlspecialchars($p['status']) ?></td>
                 <td>
-                   <a href="index.php?page=patient_profile&id=<?= $p['patient_id'] ?>">View</a> |
-                   <a href="index.php?page=patients&action=edit&id=<?= $p['patient_id'] ?>">Edit</a> |
+                    <a href="index.php?page=patient_profile&id=<?= $p['patient_id'] ?>">View</a> |
+                    <a href="index.php?page=patients&action=edit&id=<?= $p['patient_id'] ?>">Edit</a> |
                     <?php if ($p['status'] === 'Active'): ?>
                         <a href="index.php?page=patients&action=deactivate&id=<?= $p['patient_id'] ?>" onclick="return confirm('Deactivate this patient?');">Deactivate</a>
                     <?php else: ?>
