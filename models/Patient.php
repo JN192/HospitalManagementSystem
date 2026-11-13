@@ -35,9 +35,21 @@ class Patient
         return $row ?: null;
     }
 
+    public static function codeExists(string $patientCode, int $excludeId = 0): bool
+    {
+        $stmt = getDBConnection()->prepare(
+            'SELECT COUNT(*) FROM patients WHERE patient_code = :code AND patient_id <> :id'
+        );
+        $stmt->execute(['code' => $patientCode, 'id' => $excludeId]);
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
     public static function create(array $data): void
     {
         $pdo = getDBConnection();
+        if (self::codeExists($data['patient_code'])) {
+            throw new RuntimeException('A patient with this ID/code already exists.');
+        }
         $stmt = $pdo->prepare(
             "INSERT INTO patients 
              (patient_code, first_name, last_name, birth_date, sex, contact_number, address, emergency_contact, course_id, status)
@@ -49,6 +61,13 @@ class Patient
     public static function update(int $id, array $data): void
     {
         $pdo = getDBConnection();
+        $current = self::getById($id);
+        if (!$current) {
+            throw new RuntimeException('Patient not found.');
+        }
+        if ($current['patient_code'] !== $data['patient_code'] && self::codeExists($data['patient_code'], $id)) {
+            throw new RuntimeException('A patient with this ID/code already exists.');
+        }
         $data['id'] = $id;
         $stmt = $pdo->prepare(
             "UPDATE patients SET 

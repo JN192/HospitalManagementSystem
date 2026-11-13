@@ -7,28 +7,32 @@ require_once __DIR__ . '/../models/Admission.php';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'admit') {
+    $readString = static function (string $key): string {
+        $value = $_POST[$key] ?? '';
+        return is_string($value) ? trim($value) : '';
+    };
     $data = [
-        'patient_id'      => $_POST['patient_id'] ?? '',
-        'doctor_id'       => $_POST['doctor_id'] ?? '',
-        'room_id'         => $_POST['room_id'] ?? '',
-        'admission_date'  => $_POST['admission_date'] ?? '',
-        'admission_time'  => $_POST['admission_time'] ?? '',
-        'admission_type'  => $_POST['admission_type'] ?? '',
-        'reason'          => trim($_POST['reason'] ?? ''),
+        'patient_id'      => filter_var($_POST['patient_id'] ?? null, FILTER_VALIDATE_INT) ?: 0,
+        'doctor_id'       => filter_var($_POST['doctor_id'] ?? null, FILTER_VALIDATE_INT) ?: 0,
+        'room_id'         => filter_var($_POST['room_id'] ?? null, FILTER_VALIDATE_INT) ?: 0,
+        'admission_date'  => $readString('admission_date'),
+        'admission_time'  => $readString('admission_time'),
+        'admission_type'  => $readString('admission_type'),
+        'reason'          => $readString('reason'),
     ];
 
     // Validation: required fields
-    if ($data['patient_id'] === '') {
+    if ($data['patient_id'] <= 0) {
         $errors[] = 'Admission requires a patient to be selected.';
     }
-    if ($data['doctor_id'] === '') {
+    if ($data['doctor_id'] <= 0) {
         $errors[] = 'Admission requires an attending doctor.';
     }
-    if ($data['room_id'] === '') {
+    if ($data['room_id'] <= 0) {
         $errors[] = 'Admission requires a room/bed to be selected.';
     }
-    if ($data['admission_type'] === '') {
-        $errors[] = 'Admission type is required.';
+    if (!in_array($data['admission_type'], ['Emergency', 'Regular'], true)) {
+        $errors[] = 'Select a valid admission type.';
     }
     if ($data['reason'] === '') {
         $errors[] = 'Reason for admission is required.';
@@ -53,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'admit
     }
 
     // Validation: room must still be available
-    if (empty($errors) && $data['room_id'] !== '') {
+    if (empty($errors) && $data['room_id'] > 0) {
         $roomFound = false;
         foreach (Room::getAvailableRooms() as $r) {
-            if ((int)$r['room_id'] === (int)$data['room_id']) { $roomFound = true; break; }
+            if ((int)$r['room_id'] === $data['room_id']) { $roomFound = true; break; }
         }
         if (!$roomFound) {
             $errors[] = 'The selected room/bed is currently occupied. Please select another available room.';
@@ -64,8 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'admit
     }
 
     // Validation: no duplicate active admission
-    if (empty($errors) && $data['patient_id'] !== '') {
-        if (Admission::hasActiveAdmission((int)$data['patient_id'])) {
+    if (empty($errors) && $data['patient_id'] > 0) {
+        if (!Patient::getById($data['patient_id']) || !in_array($data['doctor_id'], array_map(static fn($doctor) => (int)$doctor['doctor_id'], Doctor::getActiveDoctors()), true)) {
+            $errors[] = 'Select an active patient and doctor.';
+        } elseif (Admission::hasActiveAdmission($data['patient_id'])) {
             $errors[] = 'This patient already has an active admission. Discharge the current admission before admitting again.';
         }
     }

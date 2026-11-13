@@ -28,6 +28,25 @@ class Admission
 
     public static function create(array $data): void
     {
+        foreach (['patient_id', 'doctor_id', 'room_id'] as $idField) {
+            if (!isset($data[$idField]) || filter_var($data[$idField], FILTER_VALIDATE_INT) === false || (int)$data[$idField] <= 0) {
+                throw new RuntimeException('Select a valid patient, doctor, and room/bed.');
+            }
+        }
+        if (!in_array($data['admission_type'] ?? '', ['Emergency', 'Regular'], true)) {
+            throw new RuntimeException('Select a valid admission type.');
+        }
+        $date = DateTime::createFromFormat('!Y-m-d', $data['admission_date'] ?? '');
+        if (!$date || $date->format('Y-m-d') !== $data['admission_date'] || $data['admission_date'] > date('Y-m-d') || $data['admission_date'] < date('Y-m-d', strtotime('-30 days'))) {
+            throw new RuntimeException('Enter a valid admission date within the past 30 days.');
+        }
+        if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $data['admission_time'] ?? '')) {
+            throw new RuntimeException('Enter a valid admission time.');
+        }
+        if (trim((string)($data['reason'] ?? '')) === '') {
+            throw new RuntimeException('Reason for admission is required.');
+        }
+
         $pdo = getDBConnection();
         $pdo->beginTransaction();
         try {

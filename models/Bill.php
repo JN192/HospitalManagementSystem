@@ -60,6 +60,24 @@ class Bill
         $pdo = getDBConnection();
         $pdo->beginTransaction();
         try {
+            $admission = $pdo->prepare(
+                "SELECT a.admission_id
+                 FROM admissions a
+                 JOIN patients p ON p.patient_id = a.patient_id
+                 WHERE a.admission_id = :aid AND a.status IN ('Admitted', 'Discharged')
+                 FOR UPDATE"
+            );
+            $admission->execute(['aid' => $admissionId]);
+            if (!$admission->fetchColumn()) {
+                throw new RuntimeException('Billing requires an admission linked to a valid patient.');
+            }
+
+            $existing = $pdo->prepare('SELECT bill_id FROM bills WHERE admission_id = :aid LIMIT 1');
+            $existing->execute(['aid' => $admissionId]);
+            if ($existing->fetchColumn()) {
+                throw new RuntimeException('A bill already exists for this admission.');
+            }
+
             $pdo->prepare(
                 "INSERT INTO bills (admission_id, bill_date, total_amount, status)
                  VALUES (:aid, CURDATE(), 0, 'Unpaid')"
@@ -90,8 +108,10 @@ class Bill
             self::recalcTotal($pdo, $billId);
             $pdo->commit();
             return $billId;
-        } catch (Exception $e) {
-            $pdo->rollBack();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             throw $e;
         }
     }

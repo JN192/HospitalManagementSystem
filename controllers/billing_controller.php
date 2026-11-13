@@ -4,13 +4,18 @@ require_once __DIR__ . '/../models/Service.php';
 require_once __DIR__ . '/../models/Medicine.php';
 
 $errors = [];
-$billId = (int)($_GET['bill_id'] ?? $_POST['bill_id'] ?? 0);
+$submittedBillId = $_GET['bill_id'] ?? $_POST['bill_id'] ?? null;
+$billId = filter_var($submittedBillId, FILTER_VALIDATE_INT);
+$billId = $billId !== false && $billId !== null && $billId > 0 ? $billId : 0;
+if ($submittedBillId !== null && $billId === 0) {
+    $errors[] = 'Choose a valid bill.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
+    $action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
 
     if ($action === 'generate') {
-        $admissionId = (int)($_POST['admission_id'] ?? 0);
+        $admissionId = filter_var($_POST['admission_id'] ?? null, FILTER_VALIDATE_INT);
         if ($admissionId <= 0) {
             $errors[] = 'Select an admission to bill.';
         } else {
@@ -20,9 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: index.php?page=billing&bill_id=' . $existing['bill_id']);
                 exit;
             }
-            $newId = Bill::generate($admissionId);
-            header('Location: index.php?page=billing&bill_id=' . $newId . '&generated=1');
-            exit;
+            try {
+                $newId = Bill::generate($admissionId);
+                header('Location: index.php?page=billing&bill_id=' . $newId . '&generated=1');
+                exit;
+            } catch (RuntimeException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
     } elseif ($billId > 0) {
         $current = Bill::getById($billId);
@@ -32,11 +41,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($current['status'] === 'Paid') {
             $errors[] = 'This bill is fully paid and can no longer be changed.';
         } else {
-            $qty  = (int)($_POST['quantity'] ?? 1);
+            $qty = filter_var($_POST['quantity'] ?? 1, FILTER_VALIDATE_INT);
+            $qty = $qty === false ? 0 : $qty;
             $back = 'Location: index.php?page=billing&bill_id=' . $billId;
 
             if ($action === 'add_service') {
-                $service = Service::getById((int)($_POST['service_id'] ?? 0));
+                $serviceId = filter_var($_POST['service_id'] ?? null, FILTER_VALIDATE_INT);
+                $service = $serviceId ? Service::getById($serviceId) : null;
                 if (!$service || $service['status'] !== 'Active') {
                     $errors[] = 'Select an active hospital service.';
                 } elseif ($qty < 1) {
@@ -52,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
             } elseif ($action === 'add_medicine') {
-                $medicine = Medicine::getById((int)($_POST['medicine_id'] ?? 0));
+                $medicineId = filter_var($_POST['medicine_id'] ?? null, FILTER_VALIDATE_INT);
+                $medicine = $medicineId ? Medicine::getById($medicineId) : null;
                 if (!$medicine) {
                     $errors[] = 'Select a medicine.';
                 } elseif ($qty < 1) {
@@ -68,8 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
             } elseif ($action === 'add_other') {
-                $desc   = trim($_POST['description'] ?? '');
-                $amount = trim($_POST['amount'] ?? '');
+                $descValue = $_POST['description'] ?? '';
+                $amountValue = $_POST['amount'] ?? '';
+                $desc = is_string($descValue) ? trim($descValue) : '';
+                $amount = is_string($amountValue) ? trim($amountValue) : '';
                 if ($desc === '') {
                     $errors[] = 'Description is required for other charges.';
                 }
@@ -82,9 +96,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
             } elseif ($action === 'remove_item') {
-                Bill::removeItem($billId, (int)($_POST['item_id'] ?? 0));
-                header($back);
-                exit;
+                $itemId = filter_var($_POST['item_id'] ?? null, FILTER_VALIDATE_INT);
+                if (!$itemId || $itemId <= 0) {
+                    $errors[] = 'Choose a valid bill item to remove.';
+                } else {
+                    Bill::removeItem($billId, $itemId);
+                    header($back);
+                    exit;
+                }
             } elseif ($action === 'refresh_room') {
                 Bill::refreshRoomCharge($billId);
                 header($back);

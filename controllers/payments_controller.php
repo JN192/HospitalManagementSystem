@@ -2,13 +2,20 @@
 require_once __DIR__ . '/../models/Payment.php';
 
 $errors = [];
-$billId = (int)($_GET['bill_id'] ?? $_POST['bill_id'] ?? 0);
+$submittedBillId = $_GET['bill_id'] ?? $_POST['bill_id'] ?? null;
+$billId = filter_var($submittedBillId, FILTER_VALIDATE_INT);
+$billId = $billId !== false && $billId !== null && $billId > 0 ? $billId : 0;
+if ($submittedBillId !== null && $billId === 0) {
+    $errors[] = 'Choose a valid bill.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'pay' && $billId > 0) {
-    $method    = $_POST['payment_method'] ?? '';
-    $amountRaw = trim($_POST['amount'] ?? '');
+    $submittedMethod = $_POST['payment_method'] ?? '';
+    $submittedAmount = $_POST['amount'] ?? '';
+    $method = is_string($submittedMethod) ? $submittedMethod : '';
+    $amountRaw = is_string($submittedAmount) ? trim($submittedAmount) : '';
 
-    if ($amountRaw === '' || !is_numeric($amountRaw)) {
+    if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $amountRaw) || (float)$amountRaw <= 0) {
         $errors[] = 'Enter a valid payment amount.';
     } else {
         try {

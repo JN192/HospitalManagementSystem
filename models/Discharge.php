@@ -23,6 +23,20 @@ class Discharge
 
     public static function create(int $admissionId, array $data): void
     {
+        if ($admissionId <= 0 || trim($data['discharge_diagnosis'] ?? '') === '' || trim($data['discharge_instructions'] ?? '') === '') {
+            throw new RuntimeException('An active admission, discharge diagnosis, and discharge instructions are required.');
+        }
+        $date = DateTime::createFromFormat('!Y-m-d', $data['discharge_date'] ?? '');
+        if (!$date || $date->format('Y-m-d') !== $data['discharge_date'] || $data['discharge_date'] > date('Y-m-d')) {
+            throw new RuntimeException('Enter a valid discharge date that is not in the future.');
+        }
+        if (($data['follow_up_date'] ?? '') !== '') {
+            $followUp = DateTime::createFromFormat('!Y-m-d', $data['follow_up_date']);
+            if (!$followUp || $followUp->format('Y-m-d') !== $data['follow_up_date'] || $followUp < $date) {
+                throw new RuntimeException('Follow-up date must be valid and on or after discharge.');
+            }
+        }
+
         $pdo = getDBConnection();
         $pdo->beginTransaction();
         try {

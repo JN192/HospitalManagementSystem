@@ -60,8 +60,8 @@ class Payment
         if (!in_array($method, self::METHODS, true)) {
             throw new RuntimeException('Select a valid payment method.');
         }
-        if ($amount <= 0) {
-            throw new RuntimeException('Payment amount must be greater than zero.');
+        if (!is_finite($amount) || $amount <= 0 || round($amount, 2) !== $amount) {
+            throw new RuntimeException('Payment amount must be positive and have no more than two decimal places.');
         }
 
         $pdo = getDBConnection();

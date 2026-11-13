@@ -6,21 +6,25 @@ require_once __DIR__ . '/../models/Doctor.php';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save') {
+    $readString = static function (string $key): string {
+        $value = $_POST[$key] ?? '';
+        return is_string($value) ? trim($value) : '';
+    };
     $data = [
-        'admission_id'            => $_POST['admission_id'] ?? '',
-        'doctor_id'               => $_POST['doctor_id'] ?? '',
-        'treatment_date'          => $_POST['treatment_date'] ?? '',
-        'diagnosis'               => trim($_POST['diagnosis'] ?? ''),
-        'symptoms'                => trim($_POST['symptoms'] ?? ''),
-        'follow_up_instructions'  => trim($_POST['follow_up_instructions'] ?? ''),
-        'treatment_description'   => trim($_POST['treatment_description'] ?? ''),
-        'notes'                   => trim($_POST['notes'] ?? ''),
+        'admission_id'            => filter_var($_POST['admission_id'] ?? null, FILTER_VALIDATE_INT) ?: 0,
+        'doctor_id'               => filter_var($_POST['doctor_id'] ?? null, FILTER_VALIDATE_INT) ?: 0,
+        'treatment_date'          => $readString('treatment_date'),
+        'diagnosis'               => $readString('diagnosis'),
+        'symptoms'                => $readString('symptoms'),
+        'follow_up_instructions'  => $readString('follow_up_instructions'),
+        'treatment_description'   => $readString('treatment_description'),
+        'notes'                   => $readString('notes'),
     ];
 
-    if ($data['admission_id'] === '') {
+    if ($data['admission_id'] <= 0) {
         $errors[] = 'Treatment requires a valid active admission.';
     }
-    if ($data['doctor_id'] === '') {
+    if ($data['doctor_id'] <= 0) {
         $errors[] = 'Attending doctor is required.';
     }
     if ($data['treatment_date'] === '') {
@@ -34,9 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
     }
 
     if (empty($errors)) {
-        Treatment::create($data);
-        header('Location: index.php?page=treatment&success=1');
-        exit;
+        try {
+            Treatment::create($data);
+            header('Location: index.php?page=treatment&success=1');
+            exit;
+        } catch (RuntimeException $e) {
+            $errors[] = $e->getMessage();
+        }
     }
 }
 
