@@ -1,8 +1,9 @@
 <?php
 ob_start(); // lets controllers redirect with header() after the page header has printed
+date_default_timezone_set('Asia/Manila'); // so "today" matches Philippine time on the Vercel server
 error_reporting(E_ALL); ini_set('display_errors', 1);
 $page = $_GET['page'] ?? 'dashboard';
-$allowedPages = ['dashboard', 'patients', 'patient_profile', 'courses', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt', 'discharge'];
+$allowedPages = ['dashboard', 'patients', 'patient_profile', 'courses', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt', 'discharge', 'reports'];
 if (!in_array($page, $allowedPages)) { $page = 'dashboard'; }
 
 require_once __DIR__ . '/views/header.php';
@@ -39,6 +40,8 @@ if ($page === 'patients') {
     require_once __DIR__ . '/controllers/receipt_controller.php';
 } elseif ($page === 'discharge') {
     require_once __DIR__ . '/controllers/discharge_controller.php';
+} elseif ($page === 'reports') {
+    require_once __DIR__ . '/controllers/reports_controller.php';
 } else {
     echo '<h1>Hospital Management System</h1>';
 }
