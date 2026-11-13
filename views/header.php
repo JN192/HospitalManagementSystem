@@ -6,7 +6,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
 <head>
     <meta charset="UTF-8">
     <title>Hospital Management System</title>
-    <link rel="stylesheet" href="/HospitalManagementSystem/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app-shell">
