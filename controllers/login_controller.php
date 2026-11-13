@@ -21,7 +21,7 @@ if (Auth::loginIsLocked()) {
 
         if ($user !== null) {
             Auth::establishSession($user);
-            header('Location: index.php?page=dashboard');
+            header('Location: index.php?page=' . Auth::homePage($user['role']));
             exit;
         }
 

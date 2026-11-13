@@ -7,7 +7,7 @@ date_default_timezone_set('Asia/Manila'); // so "today" matches Philippine time 
 error_reporting(E_ALL); ini_set('display_errors', 1);
 
 $page = $_GET['page'] ?? 'dashboard';
-$allowedPages = ['dashboard', 'login', 'setup', 'logout', 'change_password', 'patients', 'patient_profile', 'courses', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt', 'discharge', 'reports'];
+$allowedPages = ['dashboard', 'login', 'setup', 'logout', 'change_password', 'users', 'patients', 'patient_profile', 'courses', 'doctors', 'rooms', 'admissions', 'admissions_monitor', 'treatment', 'medicines', 'medication_orders', 'services', 'billing', 'payments', 'statement', 'receipt', 'discharge', 'reports'];
 if (!in_array($page, $allowedPages, true)) { $page = 'dashboard'; }
 
 if (isset($_SESSION['auth_user'])) {
@@ -39,7 +39,7 @@ if ($page === 'logout') {
 
 if ($page === 'login') {
    if (isset($_SESSION['auth_user'])) {
-       header('Location: index.php?page=dashboard');
+       header('Location: index.php?page=' . Auth::homePage($_SESSION['auth_user']['role']));
        exit;
    }
    require __DIR__ . '/controllers/login_controller.php';
@@ -48,7 +48,7 @@ if ($page === 'login') {
 
 if ($page === 'setup') {
    if (isset($_SESSION['auth_user'])) {
-       header('Location: index.php?page=dashboard');
+       header('Location: index.php?page=' . Auth::homePage($_SESSION['auth_user']['role']));
        exit;
    }
    require __DIR__ . '/controllers/setup_controller.php';
@@ -60,12 +60,20 @@ if (!isset($_SESSION['auth_user'])) {
    exit;
 }
 
+if (!Auth::canAccessPage($_SESSION['auth_user']['role'], $page)) {
+   http_response_code(403);
+   require __DIR__ . '/views/access_denied.php';
+   exit;
+}
+
 require_once __DIR__ . '/views/header.php';
 
 if ($page === 'dashboard') {
    require_once __DIR__ . '/controllers/dashboard_controller.php';
 } elseif ($page === 'change_password') {
    require_once __DIR__ . '/controllers/change_password_controller.php';
+} elseif ($page === 'users') {
+   require_once __DIR__ . '/controllers/users_controller.php';
 } elseif ($page === 'patients') {
    require_once __DIR__ . '/controllers/patients_controller.php';
 } elseif ($page === 'patient_profile') {

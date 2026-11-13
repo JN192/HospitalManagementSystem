@@ -255,3 +255,94 @@ body {
 .password-card {
     margin: 20px auto;
 }
+
+.user-management > h1,
+.user-management > p {
+    margin-bottom: 12px;
+}
+
+.user-form-card {
+    margin: 20px 0;
+    padding: 18px;
+    border: 1px solid #dbe3eb;
+    border-radius: 8px;
+    background: white;
+}
+
+.user-form-card h2,
+.user-management > h2 {
+    margin-bottom: 14px;
+}
+
+.user-create-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    align-items: end;
+    gap: 10px;
+}
+
+.user-create-form label {
+    align-self: end;
+    font-weight: bold;
+}
+
+.user-create-form input,
+.user-create-form select,
+.user-reset-form input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 9px;
+    border: 1px solid #94a3b8;
+    border-radius: 5px;
+    font: inherit;
+}
+
+.user-create-form button,
+.user-action-button {
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 5px;
+    background: navy;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+}
+
+.user-create-form button:hover,
+.user-action-button:hover {
+    background: steelblue;
+}
+
+.user-table-wrap {
+    overflow-x: auto;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.user-table th,
+.user-table td {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.user-table th {
+    background: #e2e8f0;
+}
+
+.user-actions {
+    min-width: 260px;
+}
+
+.user-actions form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}

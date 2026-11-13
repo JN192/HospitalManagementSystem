@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('The initial administrator account could not be authenticated.');
         }
         Auth::establishSession($user);
-        header('Location: index.php?page=dashboard');
+        header('Location: index.php?page=' . Auth::homePage($user['role']));
         exit;
     }
 }

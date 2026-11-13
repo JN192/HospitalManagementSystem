@@ -14,22 +14,34 @@ $currentPage = $_GET['page'] ?? 'dashboard';
         <div class="brand">HMS</div>
         <nav>
             <ul class="nav-menu">
-                <li><a href="index.php?page=dashboard" class="<?= $currentPage === 'dashboard' ? 'active' : '' ?>">Dashboard</a></li>
-                <li><a href="index.php?page=patients" class="<?= $currentPage === 'patients' ? 'active' : '' ?>">Patients</a></li>
-                <li><a href="index.php?page=courses" class="<?= $currentPage === 'courses' ? 'active' : '' ?>">Courses</a></li>
-                <li><a href="index.php?page=doctors" class="<?= $currentPage === 'doctors' ? 'active' : '' ?>">Doctors</a></li>
-                <li><a href="index.php?page=rooms" class="<?= $currentPage === 'rooms' ? 'active' : '' ?>">Rooms</a></li>
-                <li><a href="index.php?page=admissions" class="<?= $currentPage === 'admissions' ? 'active' : '' ?>">Admissions</a></li>
-                <li><a href="index.php?page=admissions_monitor" class="<?= $currentPage === 'admissions_monitor' ? 'active' : '' ?>">Admitted Patients</a></li>
-                <li><a href="index.php?page=treatment" class="<?= $currentPage === 'treatment' ? 'active' : '' ?>">Treatment</a></li>
-                <li><a href="index.php?page=medicines" class="<?= $currentPage === 'medicines' ? 'active' : '' ?>">Medicines</a></li>
-                <li><a href="index.php?page=medication_orders" class="<?= $currentPage === 'medication_orders' ? 'active' : '' ?>">Medication Orders</a></li>
-                <li><a href="index.php?page=services" class="<?= $currentPage === 'services' ? 'active' : '' ?>">Services &amp; Rates</a></li>
-                <li><a href="index.php?page=billing" class="<?= $currentPage === 'billing' ? 'active' : '' ?>">Billing</a></li>
-                <li><a href="index.php?page=payments" class="<?= $currentPage === 'payments' ? 'active' : '' ?>">Payments</a></li>
-                <li><a href="index.php?page=discharge" class="<?= $currentPage === 'discharge' ? 'active' : '' ?>">Discharge</a></li>
-                <li><a href="index.php?page=reports" class="<?= $currentPage === 'reports' ? 'active' : '' ?>">Reports</a></li>
-                <li><a href="index.php?page=change_password" class="<?= $currentPage === 'change_password' ? 'active' : '' ?>">Change Password</a></li>
+                <?php
+                $navigationItems = [
+                    'dashboard' => 'Dashboard',
+                    'patients' => 'Patients',
+                    'courses' => 'Courses',
+                    'doctors' => 'Doctors',
+                    'rooms' => 'Rooms',
+                    'admissions' => 'Admissions',
+                    'admissions_monitor' => 'Admitted Patients',
+                    'treatment' => 'Treatment',
+                    'medicines' => 'Medicines',
+                    'medication_orders' => 'Medication Orders',
+                    'services' => 'Services &amp; Rates',
+                    'billing' => 'Billing',
+                    'payments' => 'Payments',
+                    'discharge' => 'Discharge',
+                    'reports' => 'Reports',
+                    'users' => 'User Management',
+                    'change_password' => 'Change Password',
+                ];
+                foreach ($navigationItems as $navPage => $label):
+                    if (Auth::canAccessPage($_SESSION['auth_user']['role'], $navPage)):
+                ?>
+                    <li><a href="index.php?page=<?= htmlspecialchars($navPage, ENT_QUOTES, 'UTF-8') ?>" class="<?= $currentPage === $navPage ? 'active' : '' ?>"><?= $label ?></a></li>
+                <?php
+                    endif;
+                endforeach;
+                ?>
                 <li>
                     <form method="post" action="index.php?page=logout">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Auth::csrfToken(), ENT_QUOTES, 'UTF-8') ?>">
