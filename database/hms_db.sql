@@ -320,7 +320,8 @@ ALTER TABLE `treatment_medicines`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`user_id`);
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `users_username_unique` (`username`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -457,4 +458,3 @@ ALTER TABLE `treatment_medicines`
   ADD CONSTRAINT `medicine_id` FOREIGN KEY (`medicine_id`) REFERENCES `medicines` (`medicine_id`),
   ADD CONSTRAINT `treatment_id` FOREIGN KEY (`treatment_id`) REFERENCES `treatments` (`treatment_id`);
 COMMIT;
-

@@ -5,6 +5,8 @@
     }
   },
   "routes": [
+    { "src": "^/(config|controllers|models|views|database|reports|\\.git)(/.*)?$", "status": 404 },
+    { "src": "^/(test_connection\\.php|share_router\\.php|.*\\.sql)$", "status": 404 },
     { "src": "^/(index\\.php)?$", "dest": "/api/index.php" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/api/index.php" }

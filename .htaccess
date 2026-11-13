@@ -1,0 +1,6 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(config|controllers|models|views|database|reports)(/|$) - [F,NC,L]
+RewriteRule ^test_connection\.php$ - [F,NC,L]
+RewriteRule ^(share_router\.php|.*\.sql)$ - [F,NC,L]
+RewriteRule ^\.git(/|$) - [F,NC,L]

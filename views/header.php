@@ -29,8 +29,13 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                 <li><a href="index.php?page=payments" class="<?= $currentPage === 'payments' ? 'active' : '' ?>">Payments</a></li>
                 <li><a href="index.php?page=discharge" class="<?= $currentPage === 'discharge' ? 'active' : '' ?>">Discharge</a></li>
                 <li><a href="index.php?page=reports" class="<?= $currentPage === 'reports' ? 'active' : '' ?>">Reports</a></li>
-                <li><a href="#">Users</a></li>
-                <li><a href="#">Logout</a></li>
+                <li><a href="index.php?page=change_password" class="<?= $currentPage === 'change_password' ? 'active' : '' ?>">Change Password</a></li>
+                <li>
+                    <form method="post" action="index.php?page=logout">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Auth::csrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                        <button class="nav-logout" type="submit">Logout (<?= htmlspecialchars($_SESSION['auth_user']['username'], ENT_QUOTES, 'UTF-8') ?>)</button>
+                    </form>
+                </li>
             </ul>
         </nav>
     </aside>
