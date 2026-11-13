@@ -95,8 +95,8 @@ class Auth
             }
 
             $stmt = $pdo->prepare(
-                "INSERT INTO users (username, password, role, status)
-                 VALUES (:username, :password, 'Administrator', 'ACTIVE')"
+                "INSERT INTO users (user_id, username, password, role, status)
+                 VALUES (1, :username, :password, 'Administrator', 'ACTIVE')"
             );
             $stmt->execute([
                 'username' => $username,
