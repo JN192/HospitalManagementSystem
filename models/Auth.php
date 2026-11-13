@@ -5,7 +5,7 @@ class Auth
 {
     private const PAGE_ACCESS = [
         'Administrator' => ['*'],
-        'Doctor' => ['patients', 'patient_profile', 'admissions', 'admissions_monitor', 'treatment'],
+        'Doctor' => ['patients', 'patient_profile', 'admissions', 'admissions_monitor', 'treatment', 'discharge'],
         'Nurse' => ['patients', 'patient_profile', 'admissions_monitor', 'treatment'],
         'Receptionist' => ['patients', 'patient_profile', 'admissions', 'admissions_monitor'],
         'Cashier' => ['billing', 'payments', 'receipt', 'statement'],
@@ -90,6 +90,9 @@ class Auth
         }
 
         $allowedPages = self::PAGE_ACCESS[$role] ?? [];
+        if ($role === 'Administrator') {
+            $allowedPages[] = 'users';
+        }
         return in_array('*', $allowedPages, true) || in_array($page, $allowedPages, true);
     }
 

@@ -71,9 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'admit
     }
 
     if (empty($errors)) {
-        Admission::create($data);
-        header('Location: index.php?page=admissions&success=1');
-        exit;
+        try {
+            Admission::create($data);
+            header('Location: index.php?page=admissions&success=1');
+            exit;
+        } catch (RuntimeException $e) {
+            $errors[] = $e->getMessage();
+        }
     }
 }
 

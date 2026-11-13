@@ -31,6 +31,32 @@ class Admission
         $pdo = getDBConnection();
         $pdo->beginTransaction();
         try {
+            $patient = $pdo->prepare('SELECT status FROM patients WHERE patient_id = :id FOR UPDATE');
+            $patient->execute(['id' => $data['patient_id']]);
+            if ($patient->fetchColumn() !== 'Active') {
+                throw new RuntimeException('The selected patient is not active.');
+            }
+
+            $doctor = $pdo->prepare("SELECT status FROM doctors WHERE doctor_id = :id");
+            $doctor->execute(['id' => $data['doctor_id']]);
+            if ($doctor->fetchColumn() !== 'Active') {
+                throw new RuntimeException('The selected doctor is not active.');
+            }
+
+            $room = $pdo->prepare('SELECT status FROM rooms WHERE room_id = :id FOR UPDATE');
+            $room->execute(['id' => $data['room_id']]);
+            if ($room->fetchColumn() !== 'Available') {
+                throw new RuntimeException('The selected room/bed is no longer available.');
+            }
+
+            $activeAdmission = $pdo->prepare(
+                "SELECT COUNT(*) FROM admissions WHERE patient_id = :patient_id AND status = 'Admitted'"
+            );
+            $activeAdmission->execute(['patient_id' => $data['patient_id']]);
+            if ((int)$activeAdmission->fetchColumn() > 0) {
+                throw new RuntimeException('This patient already has an active admission.');
+            }
+
             $stmt = $pdo->prepare(
                 "INSERT INTO admissions 
                  (patient_id, doctor_id, room_id, admission_date, admission_time, admission_type, reason, status)
@@ -38,12 +64,19 @@ class Admission
             );
             $stmt->execute($data);
 
-            $pdo->prepare("UPDATE rooms SET status = 'Occupied' WHERE room_id = :room_id")
-                ->execute(['room_id' => $data['room_id']]);
+            $occupy = $pdo->prepare(
+                "UPDATE rooms SET status = 'Occupied' WHERE room_id = :room_id AND status = 'Available'"
+            );
+            $occupy->execute(['room_id' => $data['room_id']]);
+            if ($occupy->rowCount() !== 1) {
+                throw new RuntimeException('The selected room/bed is no longer available.');
+            }
 
             $pdo->commit();
-        } catch (Exception $e) {
-            $pdo->rollBack();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             throw $e;
         }
     }

@@ -76,15 +76,55 @@
 
 <h3>Billing History</h3>
 <table border="1" cellpadding="6" cellspacing="0" style="width:100%;">
-    <thead><tr><th>Bill Date</th><th>Total Amount</th><th>Status</th></tr></thead>
+    <thead><tr><th>Bill Date</th><th>Total Amount</th><th>Total Paid</th><th>Balance</th><th>Status</th><th>Details</th></tr></thead>
     <tbody>
         <?php if (empty($bills)): ?>
-            <tr><td colspan="3">No billing records.</td></tr>
+            <tr><td colspan="6">No billing records.</td></tr>
         <?php else: foreach ($bills as $b): ?>
+            <?php $balance = max(0, round((float)$b['total_amount'] - (float)$b['total_paid'], 2)); ?>
             <tr>
                 <td><?= htmlspecialchars($b['bill_date']) ?></td>
                 <td><?= htmlspecialchars(number_format((float)$b['total_amount'], 2)) ?></td>
+                <td><?= htmlspecialchars(number_format((float)$b['total_paid'], 2)) ?></td>
+                <td><?= htmlspecialchars(number_format($balance, 2)) ?></td>
                 <td><?= htmlspecialchars($b['status']) ?></td>
+                <td>
+                    <?php if (Auth::canAccessPage($_SESSION['auth_user']['role'], 'payments')): ?>
+                        <a href="index.php?page=payments&amp;bill_id=<?= (int)$b['bill_id'] ?>">Payments</a>
+                    <?php endif; ?>
+                    <?php if (Auth::canAccessPage($_SESSION['auth_user']['role'], 'statement')): ?>
+                        | <a href="index.php?page=statement&amp;bill_id=<?= (int)$b['bill_id'] ?>">Statement</a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endforeach; endif; ?>
+    </tbody>
+</table>
+
+<h3>Payment History</h3>
+<table border="1" cellpadding="6" cellspacing="0" style="width:100%;">
+    <thead><tr><th>Date</th><th>Bill</th><th>Admission</th><th>Method</th><th>Amount</th><th>Receipt</th></tr></thead>
+    <tbody>
+        <?php if (empty($payments)): ?>
+            <tr><td colspan="6">No payment records.</td></tr>
+        <?php else: foreach ($payments as $payment): ?>
+            <tr>
+                <td><?= htmlspecialchars($payment['payment_date']) ?></td>
+                <td>
+                    <?php if (Auth::canAccessPage($_SESSION['auth_user']['role'], 'payments')): ?>
+                        <a href="index.php?page=payments&amp;bill_id=<?= (int)$payment['bill_id'] ?>">#<?= (int)$payment['bill_id'] ?></a>
+                    <?php else: ?>
+                        #<?= (int)$payment['bill_id'] ?>
+                    <?php endif; ?>
+                <td>ADM-<?= str_pad((int)$payment['admission_id'], 5, '0', STR_PAD_LEFT) ?></td>
+                <td><?= htmlspecialchars($payment['payment_method']) ?></td>
+                <td><?= htmlspecialchars(number_format((float)$payment['amount_paid'], 2)) ?></td>
+                <td>
+                    <?php if (Auth::canAccessPage($_SESSION['auth_user']['role'], 'receipt')): ?>
+                        <a href="index.php?page=receipt&amp;payment_id=<?= (int)$payment['payment_id'] ?>">OR-<?= str_pad((int)$payment['payment_id'], 5, '0', STR_PAD_LEFT) ?></a>
+                    <?php else: ?>
+                        OR-<?= str_pad((int)$payment['payment_id'], 5, '0', STR_PAD_LEFT) ?>
+                    <?php endif; ?>
             </tr>
         <?php endforeach; endif; ?>
     </tbody>

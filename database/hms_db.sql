@@ -180,6 +180,8 @@ CREATE TABLE `treatments` (
   `doctor_id` int(11) NOT NULL,
   `treatment_date` date NOT NULL,
   `diagnosis` varchar(255) NOT NULL,
+  `symptoms` text NOT NULL,
+  `follow_up_instructions` text NOT NULL,
   `treatment_description` text NOT NULL,
   `notes` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

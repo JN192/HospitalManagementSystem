@@ -25,7 +25,13 @@
                 <td><?= htmlspecialchars($a['admission_date']) ?></td>
                 <td><?= $days ?> day<?= $days !== 1 ? 's' : '' ?></td>
                 <td><?= htmlspecialchars($a['status']) ?></td>
-                <td><a href="index.php?page=admissions_monitor&view_id=<?= $a['admission_id'] ?>">View Details</a></td>
+                <td>
+                    <a href="index.php?page=admissions_monitor&amp;view_id=<?= (int)$a['admission_id'] ?>">View Details</a>
+                    | <a href="index.php?page=patient_profile&amp;id=<?= (int)$a['patient_id'] ?>">Patient History</a>
+                    <?php if (Auth::canAccessPage($_SESSION['auth_user']['role'], 'discharge')): ?>
+                        | <a href="index.php?page=discharge">Discharge</a>
+                    <?php endif; ?>
+                </td>
             </tr>
         <?php endforeach; endif; ?>
     </tbody>

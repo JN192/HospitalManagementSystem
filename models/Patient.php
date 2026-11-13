@@ -120,11 +120,28 @@ class Patient
     {
         $pdo = getDBConnection();
         $stmt = $pdo->prepare(
-            "SELECT b.*
+            "SELECT b.*,
+                    COALESCE((SELECT SUM(py.amount_paid) FROM payments py WHERE py.bill_id = b.bill_id), 0) AS total_paid
              FROM bills b
              JOIN admissions a ON b.admission_id = a.admission_id
              WHERE a.patient_id = :id
              ORDER BY b.bill_date DESC"
+        );
+        $stmt->execute(['id' => $patientId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function getPaymentHistory(int $patientId): array
+    {
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare(
+            "SELECT py.payment_id, py.payment_date, py.payment_method, py.amount_paid,
+                    b.bill_id, a.admission_id
+             FROM payments py
+             JOIN bills b ON py.bill_id = b.bill_id
+             JOIN admissions a ON b.admission_id = a.admission_id
+             WHERE a.patient_id = :id
+             ORDER BY py.payment_date DESC, py.payment_id DESC"
         );
         $stmt->execute(['id' => $patientId]);
         return $stmt->fetchAll();

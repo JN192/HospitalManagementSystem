@@ -67,10 +67,10 @@
 <hr>
 <h3>All Admissions (for verification)</h3>
 <table border="1" cellpadding="6" cellspacing="0" style="width:100%;">
-    <thead><tr><th>Patient</th><th>Doctor</th><th>Room</th><th>Date</th><th>Type</th><th>Status</th></tr></thead>
+    <thead><tr><th>Patient</th><th>Doctor</th><th>Room</th><th>Date</th><th>Type</th><th>Status</th><th>History</th></tr></thead>
     <tbody>
         <?php if (empty($admissions)): ?>
-            <tr><td colspan="6">No admissions yet.</td></tr>
+            <tr><td colspan="7">No admissions yet.</td></tr>
         <?php else: foreach ($admissions as $a): ?>
             <tr>
                 <td><?= htmlspecialchars($a['first_name'] . ' ' . $a['last_name']) ?></td>
@@ -79,6 +79,7 @@
                 <td><?= htmlspecialchars($a['admission_date']) ?></td>
                 <td><?= htmlspecialchars($a['admission_type']) ?></td>
                 <td><?= htmlspecialchars($a['status']) ?></td>
+                <td><a href="index.php?page=patient_profile&amp;id=<?= (int)$a['patient_id'] ?>">Patient History</a></td>
             </tr>
         <?php endforeach; endif; ?>
     </tbody>

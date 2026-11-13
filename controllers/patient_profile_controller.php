@@ -13,6 +13,7 @@ if (!$patient) {
 $admissions = Patient::getAdmissionHistory($patientId);
 $treatments = Patient::getTreatmentHistory($patientId);
 $bills      = Patient::getBillingHistory($patientId);
+$payments   = Patient::getPaymentHistory($patientId);
 $discharges = Patient::getDischargeHistory($patientId);
 
 require_once __DIR__ . '/../views/patient_profile.php';

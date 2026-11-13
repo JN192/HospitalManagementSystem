@@ -6,7 +6,7 @@ $metrics = [
     ['label' => 'Available Beds', 'value' => number_format((int)$summary['available_beds']), 'link' => 'rooms'],
     ['label' => 'Occupied Beds', 'value' => number_format((int)$summary['occupied_beds']), 'link' => 'rooms'],
     ["label" => "Today's Admissions", 'value' => number_format((int)$summary['todays_admissions']), 'link' => 'admissions'],
-    ["label" => "Today's Discharges", 'value' => number_format((int)$summary['todays_discharges']), 'link' => 'discharge'],
+    ["label" => "Today's Discharges", 'value' => number_format((int)$summary['todays_discharges']), 'link' => 'reports'],
 ];
 ?>
 
@@ -16,10 +16,17 @@ $metrics = [
 
     <div class="dashboard-grid">
         <?php foreach ($metrics as $metric): ?>
-            <a class="dashboard-card" href="index.php?page=<?= htmlspecialchars($metric['link']) ?>">
-                <span class="dashboard-card-label"><?= htmlspecialchars($metric['label']) ?></span>
-                <strong class="dashboard-card-value"><?= htmlspecialchars($metric['value']) ?></strong>
-            </a>
+            <?php if (Auth::canAccessPage($_SESSION['auth_user']['role'], $metric['link'])): ?>
+                <a class="dashboard-card" href="index.php?page=<?= htmlspecialchars($metric['link']) ?><?= $metric['label'] === "Today's Discharges" ? '&amp;type=discharges' : '' ?>">
+                    <span class="dashboard-card-label"><?= htmlspecialchars($metric['label']) ?></span>
+                    <strong class="dashboard-card-value"><?= htmlspecialchars($metric['value']) ?></strong>
+                </a>
+            <?php else: ?>
+                <div class="dashboard-card">
+                    <span class="dashboard-card-label"><?= htmlspecialchars($metric['label']) ?></span>
+                    <strong class="dashboard-card-value"><?= htmlspecialchars($metric['value']) ?></strong>
+                </div>
+            <?php endif; ?>
         <?php endforeach; ?>
 
         <div class="dashboard-card dashboard-card-balance">
